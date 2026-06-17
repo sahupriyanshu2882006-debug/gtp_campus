@@ -7,7 +7,7 @@
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 */;
+/*!50503 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -53,7 +53,7 @@ CREATE TABLE `applications` (
   `student_id` int DEFAULT NULL,
   `application_type` varchar(50) DEFAULT NULL,
   `reason` text,
-  `status` varchar(30) DEFAULT NULL,
+  `status` varchar(30) DEFAULT 'Pending',
   `application_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`application_id`),
   KEY `fk_application_student` (`student_id`),
@@ -81,9 +81,9 @@ DROP TABLE IF EXISTS `complaints`;
 CREATE TABLE `complaints` (
   `complaint_id` int NOT NULL AUTO_INCREMENT,
   `student_id` int DEFAULT NULL,
-  `category` varchar(50) DEFAULT NULL,
+  `category` varchar(50) NOT NULL,
   `description` text,
-  `status` varchar(30) DEFAULT NULL,
+  `status` varchar(30) DEFAULT 'Pending',
   `is_anonymous` tinyint(1) DEFAULT NULL,
   `complaint_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`complaint_id`),
@@ -185,7 +185,9 @@ CREATE TABLE `students` (
   PRIMARY KEY (`student_id`),
   UNIQUE KEY `roll_no` (`roll_no`),
   UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `enrollment_no` (`enrollment_no`)
+  UNIQUE KEY `enrollment_no` (`enrollment_no`),
+  KEY `fk_student_org` (`organization_id`),
+  CONSTRAINT `fk_student_org` FOREIGN KEY (`organization_id`) REFERENCES `organization` (`organization_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -208,4 +210,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-15  2:15:31
+-- Dump completed on 2026-06-18  2:29:43
