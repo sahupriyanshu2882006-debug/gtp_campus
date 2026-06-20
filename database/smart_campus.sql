@@ -7,7 +7,7 @@
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -24,9 +24,9 @@ DROP TABLE IF EXISTS `admins`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `admins` (
   `admin_id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `name` varchar(50) DEFAULT NULL,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `name` varchar(50) NOT NULL,
   PRIMARY KEY (`admin_id`),
   UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -55,10 +55,16 @@ CREATE TABLE `applications` (
   `reason` text,
   `status` varchar(30) DEFAULT 'Pending',
   `application_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `organization_id` int DEFAULT NULL,
+  `department_id` int DEFAULT NULL,
   PRIMARY KEY (`application_id`),
   KEY `fk_application_student` (`student_id`),
+  KEY `fk_application_org` (`organization_id`),
+  KEY `fk_application_department` (`department_id`),
+  CONSTRAINT `fk_application_department` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`),
+  CONSTRAINT `fk_application_org` FOREIGN KEY (`organization_id`) REFERENCES `organization` (`organization_id`),
   CONSTRAINT `fk_application_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -67,7 +73,7 @@ CREATE TABLE `applications` (
 
 LOCK TABLES `applications` WRITE;
 /*!40000 ALTER TABLE `applications` DISABLE KEYS */;
-INSERT INTO `applications` VALUES (3,1,'Leave Application','Medical Leave','Pending','2026-06-07 09:19:43');
+INSERT INTO `applications` VALUES (3,1,'Leave Application','Medical Leave','Pending','2026-06-07 09:19:43',NULL,NULL),(4,1,'Leave Application','Medical Leave','Pending','2026-06-20 19:57:50',1,8),(5,1,'Leave Application','Medical Leave','Pending','2026-06-20 20:03:59',1,8);
 /*!40000 ALTER TABLE `applications` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -86,10 +92,19 @@ CREATE TABLE `complaints` (
   `status` varchar(30) DEFAULT 'Pending',
   `is_anonymous` tinyint(1) DEFAULT NULL,
   `complaint_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `admin_id` int DEFAULT NULL,
+  `organization_id` int DEFAULT NULL,
+  `department_id` int DEFAULT NULL,
   PRIMARY KEY (`complaint_id`),
   KEY `student_id` (`student_id`),
-  CONSTRAINT `complaints_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `fk_complaint_admin` (`admin_id`),
+  KEY `fk_complaint_org` (`organization_id`),
+  KEY `fk_complaint_department` (`department_id`),
+  CONSTRAINT `complaints_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`),
+  CONSTRAINT `fk_complaint_admin` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`admin_id`),
+  CONSTRAINT `fk_complaint_department` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`),
+  CONSTRAINT `fk_complaint_org` FOREIGN KEY (`organization_id`) REFERENCES `organization` (`organization_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -98,7 +113,35 @@ CREATE TABLE `complaints` (
 
 LOCK TABLES `complaints` WRITE;
 /*!40000 ALTER TABLE `complaints` DISABLE KEYS */;
+INSERT INTO `complaints` VALUES (1,1,'Hostel','Water problem in hostel','Pending',0,'2026-06-20 19:33:21',NULL,1,6),(2,1,'Hostel','Water problem','Pending',NULL,'2026-06-20 20:03:51',NULL,1,6);
 /*!40000 ALTER TABLE `complaints` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `departments`
+--
+
+DROP TABLE IF EXISTS `departments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `departments` (
+  `department_id` int NOT NULL AUTO_INCREMENT,
+  `organization_id` int DEFAULT NULL,
+  `department_name` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`department_id`),
+  KEY `organization_id` (`organization_id`),
+  CONSTRAINT `departments_ibfk_1` FOREIGN KEY (`organization_id`) REFERENCES `organization` (`organization_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `departments`
+--
+
+LOCK TABLES `departments` WRITE;
+/*!40000 ALTER TABLE `departments` DISABLE KEYS */;
+INSERT INTO `departments` VALUES (6,1,'Hostel'),(7,1,'Library'),(8,1,'Academic'),(9,1,'Examination'),(10,1,'Transport');
+/*!40000 ALTER TABLE `departments` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -143,14 +186,14 @@ DROP TABLE IF EXISTS `organization`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `organization` (
   `organization_id` int NOT NULL AUTO_INCREMENT,
-  `organization_name` varchar(200) DEFAULT NULL,
+  `organization_name` varchar(200) NOT NULL,
   `organization_type` varchar(50) DEFAULT NULL,
   `organization_email` varchar(100) DEFAULT NULL,
   `phone` varchar(15) DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`organization_id`),
   UNIQUE KEY `organizaton_email` (`organization_email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -159,6 +202,7 @@ CREATE TABLE `organization` (
 
 LOCK TABLES `organization` WRITE;
 /*!40000 ALTER TABLE `organization` DISABLE KEYS */;
+INSERT INTO `organization` VALUES (1,'GTP Campus',NULL,'admin@gtp.com','9876543210','1234');
 /*!40000 ALTER TABLE `organization` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -178,7 +222,7 @@ CREATE TABLE `students` (
   `department` varchar(50) DEFAULT NULL,
   `year` int DEFAULT NULL,
   `dob` date DEFAULT NULL,
-  `phone` varchar(10) DEFAULT NULL,
+  `phone` varchar(15) DEFAULT NULL,
   `enrollment_no` varchar(30) DEFAULT NULL,
   `university_name` varchar(200) DEFAULT NULL,
   `organization_id` int DEFAULT NULL,
@@ -210,4 +254,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-18  2:29:43
+-- Dump completed on 2026-06-21  1:51:24
